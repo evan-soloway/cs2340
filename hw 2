@@ -11,14 +11,18 @@ input: .asciiz
 
 .text
 
-function: 
-
-jr $ra
-
 main:
 li $v0, 54
 la $a0, message
 la $a1, input
 syscall
 
-jal function
+jal counting
+
+counting:
+
+li $v0, 4
+la $a0, input
+syscall
+
+jr $ra
