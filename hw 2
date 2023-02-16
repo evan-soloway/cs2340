@@ -10,8 +10,15 @@ message: .asciiz "Enter some text:"
 input: .asciiz
 
 .text
+
+function: 
+
+jr $ra
+
+main:
 li $v0, 54
 la $a0, message
 la $a1, input
 syscall
 
+jal function
