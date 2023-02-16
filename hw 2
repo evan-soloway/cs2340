@@ -1,0 +1,17 @@
+# outline
+
+# call function which counts num of chars and number of words from input
+# output string and num of chars and number of words
+# repeat until user exits or provides blank string
+# use sycall 59 at end of program
+
+.data
+message: .asciiz "Enter some text:"
+input: .asciiz
+
+.text
+li $v0, 54
+la $a0, message
+la $a1, input
+syscall
+
