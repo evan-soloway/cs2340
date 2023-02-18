@@ -1,28 +1,112 @@
-# outline
-
-# call function which counts num of chars and number of words from input
-# output string and num of chars and number of words
-# repeat until user exits or provides blank string
-# use sycall 59 at end of program
+# NOTES:
+# alignment issues in memory made storing char and word count to memory impractical, cannot get program to work in time that way, so I simply save to registers $s3 and $s4 instead.
 
 .data
 message: .asciiz "Enter some text:"
-input: .asciiz
+here: .asciiz "HERE "
+space: .asciiz " "
+newline: .asciiz "\n"
+wordmessage: .asciiz "Number of Words is: "
+charmessage: .asciiz "Number of Chars is: "
+exit1: .asciiz "HAVE A GOOD DAY "
+exit2: .asciiz "BYE BYE BYE"
+
+input: .space 256 # allocate 256 bytes (overkill, I know)
+
+chl: .word # number of chars
+wl: .word # number of words
+
+null: .word 0
+whitespace: .word 32 # ascii value for space in DECIMAL
+
+temp: .word
+####################################################################################################################################################
 
 .text
 
 main:
+
 li $v0, 54
 la $a0, message
 la $a1, input
-syscall
+li $a2, 100
+syscall # ask for input and receive
 
-jal counting
+# S REGISTERS
+lw $s0, null
+lw $s1, whitespace
+la $s2, input
+addi $s3, $0, 1 # this is the number of words register; added 1 to account for word before first whitespace
+subi $s4, $0, 1 # this is the number of chars register; subtract 1 to remove terminating null char from count
+la $s5, input # ERROR FIND
+lb $s6, input #1st char
 
-counting:
+j loop # go to loop
 
-li $v0, 4
+display:
+
+beq $a1, -2, exit # if cancel hit, exit
+beq $a1, -3, exit # if empty string entered, exit
+
 la $a0, input
+li $v0, 4
 syscall
 
-jr $ra
+la $a0, wordmessage
+li $v0, 4
+syscall
+
+move $a0, $s3
+li $v0, 1
+syscall
+
+la $a0, newline
+li $v0, 4
+syscall
+
+la $a0, charmessage
+li $v0, 4
+syscall
+
+move $a0, $s4
+li $v0, 1
+syscall
+
+la $a0, newline
+li $v0, 4
+syscall
+
+j main
+
+exit:
+
+li $v0, 59
+la $a0, exit1
+la $a1, exit2
+syscall
+
+li $v0, 10
+syscall
+
+####################################################################################################################################################
+
+wordIncrement:
+
+addi $s3, $s3, 1
+j pointerIncrement
+
+pointerIncrement:
+
+addi $s2, $s2, 1 # increment pointer
+j loop
+
+loop:
+
+lb $t0, ($s2)
+
+beq $t0, $s0, display # if pointing at terminating null, exit
+
+addi $s4, $s4, 1 # increment char count
+beq $t0, $s1, wordIncrement
+
+j pointerIncrement
